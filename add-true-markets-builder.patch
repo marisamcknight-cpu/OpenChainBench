@@ -1,0 +1,141 @@
+diff --git a/benchmarks/hyperliquid-frontends.yml b/benchmarks/hyperliquid-frontends.yml
+index 66c2ce2..5151017 100644
+--- a/benchmarks/hyperliquid-frontends.yml
++++ b/benchmarks/hyperliquid-frontends.yml
+@@ -1530,6 +1530,19 @@ providers:
+       success: (hl_frontend_local_last_tick_unix_v2 > bool (time() - 7200))
+       sample_size: hl_frontend_fills_total_24h_v2{builder="mojo"}
+       series: hl_frontend_fees_usd_24h_v2{builder="mojo"}
++
++  - slug: true-markets
++    name: True Markets
++    tag: Hyperliquid builder code, USD revenue on the last complete UTC day
++    formula: "USD builder fees collected on the last complete UTC day, summed across every attributed fill in the daily feed file for True Markets' builder address."
++    queries:
++      p50: hl_frontend_fees_usd_24h_v2{builder="true-markets"}
++      p90: hl_frontend_volume_usd_24h_v2{builder="true-markets"}
++      p99: hl_frontend_fees_per_user_usd_v2{builder="true-markets"}
++      mean: avg_over_time(hl_frontend_fees_usd_24h_v2{builder="true-markets"}[7d])
++      success: (hl_frontend_local_last_tick_unix_v2 > bool (time() - 7200))
++      sample_size: hl_frontend_fills_total_24h_v2{builder="true-markets"}
++      series: hl_frontend_fees_usd_24h_v2{builder="true-markets"}
+ metric_panels:
+   - id: volume
+     label: Volume routed
+diff --git a/harnesses/hyperliquid-frontends/builders.json b/harnesses/hyperliquid-frontends/builders.json
+index bed1534..25f5f6e 100644
+--- a/harnesses/hyperliquid-frontends/builders.json
++++ b/harnesses/hyperliquid-frontends/builders.json
+@@ -758,5 +758,12 @@
+     "address": "0x7e60c68538c967b76381db4f46010ef378977997",
+     "valid_from": "2026-06-27",
+     "notes": "MOJO (mojo.trade), an AI trading app on web, iOS and Android: a trade is described in chat and confirmed on an order card, and the orders it routes to Hyperliquid (crypto perps and HIP-3 stock perps) carry this builder address. Builder address and fee from the operator: 0.05% of notional on every fill, published at docs.mojo.trade/use-cases/trade-us-stocks; every fill in the public bucket reads exactly 5.0 bp. valid_from is the first day the public fills bucket returns a file, checked day by day from 2026-04-01 on 2026-11-12: 127 days have one, the earliest 2026-06-27. The 30 files to 2026-11-11 hold 1,365 fills, about $142.5k of notional and $71.26 of builder fees from 113 wallets, and no fill has another of those wallets as its counterparty. Hyperliquid's referral info for the address reports about $408 of builderRewards."
++  },
++  {
++    "slug": "true-markets",
++    "name": "True Markets",
++    "address": "0x7bc2baaf2c79d9be1f5c327b5fb5325583604734",
++    "valid_from": "2026-06-10",
++    "notes": "True Markets (truemarkets.co), a self-custodial trading app and API for tokenized stocks, crypto and perpetuals; the perp orders it routes to Hyperliquid carry this builder address. Builder address from the operator; HypurrScan labels the address True Markets and Hyperliquid's referral info for it reports about $172 of builderRewards (read 2026-11-16). Fee schedule published at truemarkets.co/fees, last updated 2026-11-12: 0.25% per trade on the web and mobile app, 0.20% through the CLI, MCP server and Gateway API; builder fee from the operator: 0, nothing is added on top of Hyperliquid's own fees. The builderRewards figure means some fills have carried a nonzero builder fee; the bp per fill was not read from the public bucket. valid_from is from the operator: the day the address was first funded on HyperCore, a system send of 199.96 USDC from HyperEVM on 2026-06-10 at 21:38 UTC (tx 0xc918b2bf21d362a1ca92043d6dae6002011d00a4bcd681736ce15e11e0d73c8c). The first day the public fills bucket returns a file was not checked and can only be that day or later."
+   }
+ ]
+diff --git a/public/logos/true-markets.png b/public/logos/true-markets.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..2a7a5fe33db95900c7d3540ffe11f4a9492b36a1
+GIT binary patch
+literal 3377
+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
+Gx$}Pt3LN$T
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/data/provider-registry.ts b/src/data/provider-registry.ts
+index 11c2059..21f9b70 100644
+--- a/src/data/provider-registry.ts
++++ b/src/data/provider-registry.ts
+@@ -2348,6 +2348,12 @@ export const PROVIDER_REGISTRY: Record<string, ProviderRegistryEntry> = {
+       "MOJO is an AI trading app on web, iOS and Android where a trade is described in chat and confirmed on an order card; the orders it routes to Hyperliquid, crypto perps and HIP-3 stock perps, carry its builder code at 0.05% of notional.",
+     twitter: "@MojoAI_HQ",
+   },
++  "true-markets": {
++    url: "https://truemarkets.co",
++    description:
++      "True Markets is a self-custodial trading app and API for tokenized stocks, crypto and perpetuals; the perp orders it routes to Hyperliquid carry its builder code.",
++    twitter: "@truemarketsco",
++  },
+ 
+   // ─── Perp funding venues (bench № 036) ─────────────────────────────
+   bybit: {
+diff --git a/src/lib/logo-manifest.ts b/src/lib/logo-manifest.ts
+index 08a74d0..c5b1f92 100644
+--- a/src/lib/logo-manifest.ts
++++ b/src/lib/logo-manifest.ts
+@@ -688,6 +688,7 @@ const RAW: Record<string, string> = {
+   afterbell: "/logos/afterbell.png",
+   // MOJO's iOS App Store icon (512 px), scaled to 256 px.
+   mojo: "/logos/mojo.png",
++  "true-markets": "/logos/true-markets.png",
+   "nova-markets": "/logos/nova-markets.jpeg",
+   "phantom-perps": "/logos/phantom-perps.svg",
+   // ─── Terminal fill quality (bench № 268): the wallets' in-app swap ───
